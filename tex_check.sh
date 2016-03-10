@@ -55,28 +55,45 @@ fi
 #
 
 echo "# Missing space in new sentence"
-awk '{for(i=1;i<=NF;i++){print $i}}' $TEX | grep -i "\.[a-z]" $TEX | grep -TEn --color -v '\.pdf' 
+awk '{for(i=1;i<=NF;i++){print $i}}' $TEX | grep -i '\.[a-z]' $TEX | grep -TEn --color -v '\.pdf'  # Ignore inclusion of e.g. pdf figures 
 
 #
 # Missing space before or after bracket
 #
 
 echo "# Missing space after bracket"
-awk '{for(i=1;i<=NF;i++){print $i}}' $TEX | grep -TEni --color  "\)[a-z]" $TEX
+awk '{for(i=1;i<=NF;i++){print $i}}' $TEX | grep -TEni --color '\)[a-z]' $TEX
 echo "# Missing space before bracket"
-awk '{for(i=1;i<=NF;i++){print $i}}' $TEX | grep -TEni --color  "[a-z]\(" $TEX
+awk '{for(i=1;i<=NF;i++){print $i}}' $TEX | grep -TEni --color '[a-z]\(' $TEX
 
 #
 # Missing capital in new sentence
 #
 
 echo "# Missing capital in new sentence"
-awk '{for(i=1;i<=NF;i++){print $i}}' $TEX | grep -TEn --color  "\. [a-z]" $TEX 
+awk '{for(i=1;i<=NF;i++){print $i}}' $TEX | grep -TEn --color '\. [a-z]' $TEX 
 
 #
 # Repeated words
 #
 
 echo "# Repeated words"
-grep -TEin --color  "\b(\w+)\b\s*\1\b" $TEX
-awk '{printf("%s\n   %.5d - %.5d: ... %s ",$0, FNR,FNR+1, $NF)}' $TEX | grep -TEi --color "\.\.\. \b(\w+)\b\s*\1\b"        
+awk '{if(NF){printf($0 "\n" $NF " ")}else{printf("\n")}}' $TEX | grep -TEin --color '\b(\w+)\b\s*\1\b'
+
+#
+# Footnote spacing
+#      
+
+echo "# Footnote spacing"
+grep -Ei --color '\. +\\footnote{' $TEX
+grep -i --color '[a-z]\\footnote{' $TEX
+
+#
+# Check \cite spacing
+#
+
+echo "# \cite spacing"
+if grep -Eiq --color ' +\\cite{' $TEX && grep -iq --color '[a-z]\\cite{' $TEX; then
+    grep -Ei -m 1 --color ' +\\cite{' $TEX 
+    grep -i -m 1 --color '[a-z]\\cite{' $TEX
+fi

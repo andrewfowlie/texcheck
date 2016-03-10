@@ -1,0 +1,21 @@
+This file should provide tests for all functions in tex_check.
+
+Missing space in a new sentence.Missing space in a new sentence
+
+Missing space before bracket(
+
+)Missing space after bracket
+
+Missing capital in new sentence. missing capital in new sentence
+
+Repeated repeated words words on a single line
+
+Repeated words  
+words across a line break
+
+This is a misplaced footnote. \footnote{wrong}
+And so is this.  \footnote{wrong}
+And this\footnote{wrong}.
+Finally.\footnote{right}
+
+This citing\cite{ref} and \cite{ref} is inconsistent.
