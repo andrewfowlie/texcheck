@@ -19,3 +19,7 @@ And this\footnote{wrong}.
 Finally.\footnote{right}
 
 This citing\cite{ref} and \cite{ref} is inconsistent.
+
+This can cause problems for % my script
+
+This can cause problems % for my script

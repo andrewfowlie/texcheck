@@ -42,7 +42,7 @@ if ! [ -e "$BIBLOG" ]
     echo "# No BibTeX log"
   else
     echo "# Warnings from BibTeX"
-    grep --color 'Warning' $BIBLOG 
+    cat $BIBLOG | grep --color 'Warning' 
 fi
 
 #
@@ -55,38 +55,38 @@ fi
 #
 
 echo "# Missing space in new sentence"
-awk '{for(i=1;i<=NF;i++){print $i}}' $TEX | grep -i '\.[a-z]' $TEX | grep -TEn --color -v '\.pdf'  # Ignore inclusion of e.g. pdf figures 
+cat $TEX | awk '{for(i=1;i<=NF;i++){print $i}}' | grep -i '\.[a-z]' | grep -TEn --color -v '\.pdf'  # Ignore inclusion of e.g. pdf figures 
 
 #
 # Missing space before or after bracket
 #
 
 echo "# Missing space after bracket"
-awk '{for(i=1;i<=NF;i++){print $i}}' $TEX | grep -TEni --color '\)[a-z]' $TEX
+detex $TEX | awk '{for(i=1;i<=NF;i++){print $i}}' | grep -TEni --color '\)[a-z]' $TEX
 echo "# Missing space before bracket"
-awk '{for(i=1;i<=NF;i++){print $i}}' $TEX | grep -TEni --color '[a-z]\(' $TEX
+detex $TEX | awk '{for(i=1;i<=NF;i++){print $i}}' | grep -TEni --color '[a-z]\(' $TEX
 
 #
 # Missing capital in new sentence
 #
 
 echo "# Missing capital in new sentence"
-awk '{for(i=1;i<=NF;i++){print $i}}' $TEX | grep -TEn --color '\. [a-z]' $TEX 
+detex $TEX | awk '{for(i=1;i<=NF;i++){print $i}}' | grep -TEn --color '\. [a-z]' $TEX 
 
 #
 # Repeated words
 #
 
 echo "# Repeated words"
-awk '{if(NF){printf($0 "\n" $NF " ")}else{printf("\n")}}' $TEX | grep -TEin --color '\b(\w+)\b\s*\1\b'
+detex $TEX | awk '{if(NF){printf($0 "\n" $NF " ")}else{printf("\n")}}' | grep -TEin --color '\b(\w+)\b\s*\1\b'
 
 #
 # Footnote spacing
 #      
 
 echo "# Footnote spacing"
-grep -Ei --color '\. +\\footnote{' $TEX
-grep -i --color '[a-z]\\footnote{' $TEX
+cat $TEX | grep -Ei --color '\. +\\footnote{' 
+cat $TEX | grep -i --color '[a-z]\\footnote{' 
 
 #
 # Check \cite spacing
@@ -94,6 +94,6 @@ grep -i --color '[a-z]\\footnote{' $TEX
 
 echo "# \cite spacing"
 if grep -Eiq --color ' +\\cite{' $TEX && grep -iq --color '[a-z]\\cite{' $TEX; then
-    grep -Ei -m 1 --color ' +\\cite{' $TEX 
-    grep -i -m 1 --color '[a-z]\\cite{' $TEX
+    cat $TEX | grep -Ei -m 1 --color ' +\\cite{' 
+    cat $TEX | grep -i -m 1 --color '[a-z]\\cite{'
 fi
