@@ -1,4 +1,4 @@
-This file should provide tests for all functions in tex_check.
+This file should provide tests for all functions in texcheck.
 
 Missing space in a new sentence.Missing space in a new sentence
 
@@ -23,3 +23,7 @@ This citing\cite{ref} and \cite{ref} is inconsistent.
 This can cause problems for % my script
 
 This can cause problems % for my script
+
+A error
+
+An mistake
