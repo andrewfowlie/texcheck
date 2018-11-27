@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Check a LaTeX file for spelling echos and common typos
+# Check a LaTeX file for spelling errors and common typos
 #
 
 #
