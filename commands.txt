@@ -1,0 +1,5 @@
+f-tex-command bibliographystyle p
+f-tex-command bibliography p
+f-tex-command cite p
+f-tex-command ref p
+f-tex-command label p

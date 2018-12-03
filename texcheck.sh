@@ -46,11 +46,6 @@ if [ -z "$NO_SPELL" ]; then
     --sug-mode normal \
     --mode=tex \
     --master="$DICT" \
-    --add-tex-command='bibliographystyle p' \
-    --add-tex-command='bibliography p' \
-    --add-tex-command='cite p' \
-    --add-tex-command='ref p' \
-    --add-tex-command='label p' \
     check "$TEX" # Finally check!
 
 fi
