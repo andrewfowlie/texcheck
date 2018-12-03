@@ -7,18 +7,19 @@
 # Parse command line
 #
 
-USE="$(basename "$0") [-h] [-l en_GB-ise] [FILE] -- spell-check a LaTeX file and check for common typos"
+USE="$(basename "$0") [-h] [-n] [-l en_GB-ise] [FILE] -- spell-check a LaTeX file and check for common typos"
 DICT=en_GB-ise
 
-while getopts ':hd:' option; do
+while getopts 'hdn' option; do
     case "$option" in
         h) echo "$USE"
            exit 1
            ;;
         d) DICT="$OPTARG"
            ;;
-        \?) echo "Unknown option: -$OPTARG" 
-           echo "$USE"
+        n) NO_SPELL="N"
+           ;;
+        \?) echo "$USE"
            exit 0
            ;;
     esac
@@ -36,19 +37,23 @@ fi
 # Check spelling with aspell - see http://aspell.net/0.50-doc/man-html/4_Customizing.html
 #
 
-echo "Checking spelling"
+if [ -z "$NO_SPELL" ]; then
 
-aspell \
---home-dir "$(pwd)" \
---sug-mode normal \
---mode=tex \
---master="$DICT" \
---add-tex-command='bibliographystyle p' \
---add-tex-command='bibliography p' \
---add-tex-command='cite p' \
---add-tex-command='ref p' \
---add-tex-command='label p' \
-check "$TEX" # Finally check!              
+    echo "Checking spelling"
+
+    aspell \
+    --home-dir "$(pwd)" \
+    --sug-mode normal \
+    --mode=tex \
+    --master="$DICT" \
+    --add-tex-command='bibliographystyle p' \
+    --add-tex-command='bibliography p' \
+    --add-tex-command='cite p' \
+    --add-tex-command='ref p' \
+    --add-tex-command='label p' \
+    check "$TEX" # Finally check!
+
+fi
 
 #
 # Check for missing bibliography items
@@ -61,7 +66,7 @@ if ! [ -e "$BIBLOG" ] || [ -z "$BIBLOG" ]; then
     echo "Cannot access $BIBLOG. No such file."
 else
     echo "Warnings from $BIBLOG"
-    grep --color 'Warning' "$BIBLOG" 
+    grep --color 'Warning' "$BIBLOG"
 fi
 
 #
@@ -69,23 +74,23 @@ fi
 #
 
 echo "Missing space in new sentence"
-awk '{for(i=1;i<=NF;i++){print $i}}' "$TEX" | grep -i '\.[a-z]' | grep -TEn --color -v '\.pdf'  # Ignore inclusion of e.g. pdf figures 
+awk '{for(i=1;i<=NF;i++){print $i}}' "$TEX" | grep -i '\.[a-z]' | grep -TEn --color -v '\.pdf'  # Ignore inclusion of e.g. pdf figures
 
 #
 # Missing space before or after bracket
 #
 
 echo "Missing space after bracket"
-detex "$TEX" | awk '{for(i=1;i<=NF;i++){print $i}}' | grep -TEni --color '\)[a-z]' 
+detex "$TEX" | awk '{for(i=1;i<=NF;i++){print $i}}' | grep -TEni --color '\)[a-z]'
 echo "Missing space before bracket"
-detex "$TEX" | awk '{for(i=1;i<=NF;i++){print $i}}' | grep -TEni --color '[a-z]\(' 
+detex "$TEX" | awk '{for(i=1;i<=NF;i++){print $i}}' | grep -TEni --color '[a-z]\('
 
 #
 # Missing capital in new sentence
 #
 
 echo "Missing capital in new sentence"
-detex "$TEX" | awk '{for(i=1;i<=NF;i++){print $i}}' | grep -TEn --color '\. [a-z]' 
+detex "$TEX" | awk '{for(i=1;i<=NF;i++){print $i}}' | grep -TEn --color '\. [a-z]'
 
 #
 # Repeated words
@@ -96,10 +101,10 @@ detex "$TEX" | awk '{if(NF){printf($0 "\n" $NF " ")}else{printf("\n")}}' | grep 
 
 #
 # Footnote spacing
-#      
+#
 
 echo "Footnote spacing"
-grep -Ei --color '\. +\\footnote{' "$TEX" 
+grep -Ei --color '\. +\\footnote{' "$TEX"
 grep -i --color '[a-z]\\footnote{' "$TEX"
 
 #
@@ -118,5 +123,5 @@ fi
 
 echo "a versus an"
 grep -TEni --color '\ba [aeiou]' "$TEX"
-grep -i '\ban [a-z]' "$TEX" | grep -TEn --color -v 'an [aeiou]' 
+grep -i '\ban [a-z]' "$TEX" | grep -TEn --color -v 'an [aeiou]'
 
