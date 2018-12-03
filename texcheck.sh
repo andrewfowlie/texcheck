@@ -25,7 +25,7 @@ while getopts 'hdn' option; do
     esac
 done
 
-shift "$(expr $OPTIND - 1)"
+shift "$((OPTIND - 1))"
 TEX=$1
 
 if ! [ -e "$TEX" ] || [ -z "$TEX" ]; then
@@ -90,7 +90,7 @@ detex "$TEX" | awk '{for(i=1;i<=NF;i++){print $i}}' | grep -TEni --color '[a-z]\
 #
 
 echo "Missing capital in new sentence"
-detex "$TEX" | awk '{for(i=1;i<=NF;i++){print $i}}' | grep -TEn --color '\. [a-z]'
+detex "$TEX" | tr '\n' ' ' | grep -oTEn --color '.{0,5}\. +[a-z].{0,50}'
 
 #
 # Repeated words
@@ -111,7 +111,7 @@ grep -i --color '[a-z]\\footnote{' "$TEX"
 # Check \cite spacing
 #
 
-echo "\cite spacing"
+echo "\\cite spacing"
 if grep -Eiq --color ' +\\cite{' "$TEX" && grep -iq --color '[a-z]\\cite{' "$TEX"; then
     grep -Ei -m 1 --color ' +\\cite{' "$TEX"
     grep -i -m 1 --color '[a-z]\\cite{' "$TEX"
