@@ -4,12 +4,12 @@ Spell-check a LaTeX file and check for common typos.
 
 # basic usage
 
-    ./texcheck.sh your_tex_file.tex
+    ./texcheck your_tex_file.tex
 
 # advanced usage
 
-    ./texcheck.sh -n your_tex_file.tex  # Turn off spell-check
-    ./texcheck.sh -l en_GB-ize your_tex_file.tex  # Use a different dictionary
+    ./texcheck -n your_tex_file.tex  # Turn off spell-check
+    ./texcheck -l en_GB-ize your_tex_file.tex  # Use a different dictionary
 
 You can add tex commands (the arguments of which won't be spell-checked) to `commands.txt`. You should
 follow the syntax described [here](http://aspell.net/0.50-doc/man-html/4_Customizing.html#SECTION00541500000000000000).
@@ -21,4 +21,4 @@ added there.
 
     sudo ./install.sh
 
-should make a symlink to `texcheck.sh` in `\usr\local\bin`, such that it can be invoked simply by `texcheck` from anywhere.
+should make a symlink to `texcheck` in `\usr\local\bin`, such that it can be invoked simply by `texcheck` from anywhere.
