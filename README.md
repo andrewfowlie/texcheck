@@ -16,3 +16,9 @@ follow the syntax described [here](http://aspell.net/0.50-doc/man-html/4_Customi
 
 Personal, extra allowed words should be added to `allowed_words.txt`. Words that you add through aspell are automatically
 added there.
+
+# installation
+
+    sudo ./install.sh
+
+should make a symlink to `texcheck.sh` in `\usr\local\bin`, such that it can be invoked simply by `texcheck` from anywhere.
