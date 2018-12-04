@@ -28,7 +28,12 @@ done
 shift "$((OPTIND - 1))"
 TEX=$1
 
-if ! [ -e "$TEX" ] || [ -z "$TEX" ]; then
+if [ -z "$TEX" ]; then
+    echo "$USE"
+    exit 0
+fi
+
+if ! [ -e "$TEX" ]; then
     echo "Cannot access $TEX. No such file."
     exit 0
 fi
