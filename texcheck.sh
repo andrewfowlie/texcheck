@@ -42,7 +42,7 @@ if [ -z "$NO_SPELL" ]; then
     echo "Checking spelling"
 
     aspell \
-    --home-dir "$(pwd)" \
+    --home-dir "$(dirname $0)" \
     --sug-mode normal \
     --mode=tex \
     --master="$DICT" \
