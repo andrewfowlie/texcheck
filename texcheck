@@ -7,10 +7,10 @@
 # Parse command line
 #
 
-USE="$(basename "$0") [-h] [-n] [-l en_GB-ise] [FILE] -- spell-check a LaTeX file and check for common typos"
+USE="$(basename "$0") [-h] [-n] [-d en_GB-ise] [FILE] -- spell-check a LaTeX file and check for common typos"
 DICT=en_GB-ise
 
-while getopts 'hdn' option; do
+while getopts 'h:d:n' option; do
     case "$option" in
         h) echo "$USE"
            exit 1
@@ -24,7 +24,7 @@ while getopts 'hdn' option; do
            ;;
     esac
 done
-
+echo $DICT
 shift "$((OPTIND - 1))"
 TEX=$1
 
