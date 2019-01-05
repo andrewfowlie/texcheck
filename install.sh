@@ -8,4 +8,4 @@ if [ -z "$1" ]; then
     PREFIX="/usr/local/bin"
 fi
 
-ln -sf "$(pwd)"/texcheck.sh "$PREFIX"/texcheck
+ln -sf "$(pwd)"/texcheck "$PREFIX"/texcheck
