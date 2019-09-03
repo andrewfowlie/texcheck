@@ -22,3 +22,7 @@ added there.
     sudo ./install.sh
 
 should make a symlink to `texcheck` in `\usr\local\bin`, such that it can be invoked simply by `texcheck` from anywhere.
+
+You might need to install `wdiff`and `pcregrep` by e.g.,
+
+    sudo apt install wdiff pcregrep
