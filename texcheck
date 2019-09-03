@@ -125,7 +125,7 @@ pcregrep -Mn --color=always '\w\.\s+[a-z]' "$TEX" | sed -E 's/(^\w+:)/  \1\t/g'
 #
 
 boxes "Repeated words"
-pcregrep -Mn --color '\b(\w+)\s+\1\b' "$TEX" | sed -E 's/(^\w+:)/  \1\t/g'
+pcregrep -Mn --color=always '\b(\w+)\s+\1\b' "$TEX" | sed -E 's/(^\w+:)/  \1\t/g'
 
 #
 # Footnote spacing
