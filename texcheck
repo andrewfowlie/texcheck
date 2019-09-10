@@ -67,7 +67,7 @@ if ! [ -e "$TEX" ]; then
     exit 0
 fi
 
-boxes "Checking $TEX. Settings in $HOME"
+boxes "Checking $TEX"
 
 #
 # Check spelling with aspell - see http://aspell.net/0.50-doc/man-html/4_Customizing.html
@@ -75,7 +75,10 @@ boxes "Checking $TEX. Settings in $HOME"
 
 if [ -z "$NO_SPELL" ]; then
 
-    boxes "Spelling with $DICT dictionary"
+    boxes "Spelling"
+    echo "$DICT dictionary"
+    echo "Extra allowed words in $HOME/allowed_words.txt"
+    echo "Extra tex commands in $HOME/commands.txt"
 
     aspell\
     --sug-mode normal\
