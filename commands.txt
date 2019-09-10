@@ -1,5 +1,9 @@
-f-tex-command bibliographystyle p
-f-tex-command bibliography p
-f-tex-command cite p
-f-tex-command ref p
-f-tex-command label p
+add-tex-command bibliographystyle p
+add-tex-command bibliography p
+add-tex-command cite p
+add-tex-command ref p
+add-tex-command label p
+add-tex-command refsec p
+add-tex-command refeq p
+add-tex-command reffig p
+add-tex-command refcite p

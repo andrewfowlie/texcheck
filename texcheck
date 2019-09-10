@@ -20,6 +20,12 @@ function boxes()
 }
       
 #
+# Home
+#
+
+HOME=$(dirname $(readlink -f $0))
+
+#
 # Colors for grep
 #
 
@@ -61,6 +67,8 @@ if ! [ -e "$TEX" ]; then
     exit 0
 fi
 
+boxes "Checking $TEX. Settings in $HOME"
+
 #
 # Check spelling with aspell - see http://aspell.net/0.50-doc/man-html/4_Customizing.html
 #
@@ -69,12 +77,13 @@ if [ -z "$NO_SPELL" ]; then
 
     boxes "Spelling with $DICT dictionary"
 
-    aspell \
-    --home-dir "$(dirname $(readlink -f $0))" \
-    --sug-mode normal \
-    --mode=tex \
-    --master="$DICT" \
+    aspell\
+    --sug-mode normal\
+    --mode=tex\
+    --master="$DICT"\
     --dont-tex-check-comments\
+    --personal="$HOME/allowed_words.txt"\
+    --per-conf="$HOME/commands.txt"\
     check "$TEX" # Finally check!
 
 fi
