@@ -2,14 +2,16 @@
 
 Spell-check a LaTeX file and check for common typos.
 
-# basic usage
+# Usage
 
     ./texcheck your_tex_file.tex
+    ./texcheck -d en_GB-ize your_tex_file.tex  # Use a different dictionary
 
-# advanced usage
+You might need to install `wdiff' and `pcregrep` by e.g.,
 
-    ./texcheck -n your_tex_file.tex  # Turn off spell-check
-    ./texcheck -l en_GB-ize your_tex_file.tex  # Use a different dictionary
+    sudo apt install wdiff pcregrep
+
+# Advanced usage
 
 You can add tex commands (the arguments of which won't be spell-checked) to `commands.txt`. You should
 follow the syntax described [here](http://aspell.net/0.50-doc/man-html/4_Customizing.html#SECTION00541500000000000000).
@@ -17,85 +19,78 @@ follow the syntax described [here](http://aspell.net/0.50-doc/man-html/4_Customi
 Personal, extra allowed words should be added to `allowed_words.txt`. Words that you add through aspell are automatically
 added there.
 
-# installation
-
+# Installation
+    
     sudo ./install.sh
 
-should make a symlink to `texcheck` in `\usr\local\bin`, such that it can be invoked simply by `texcheck` from anywhere.
+should make a symlink to `texcheck` in `/usr/local/bin`, such that it can be invoked simply by `texcheck` from anywhere.
 
-You might need to install `wdiff`and `pcregrep` by e.g.,
 
-    sudo apt install wdiff pcregrep
+# Example `texcheck test.tex`
 
-# example `texcheck TEST`
+```bash
+Spell check fixes
+=================
 
-     ------------------------------------
-    |                                    |
-    | Spelling with en_GB-ise dictionary |
-    |                                    |
-     ------------------------------------
 
-     texcheck. => toxic.
+\unknown{eagbe} => \unknown{Abe}
 
-     linebreak => linebacker
 
-     \unknown{eagbe} => \unknown{eager}
+Missing space before new sentence
+=================================
 
-     ------------------------
-    |                        |
-    | Warnings from TEST.blg |
-    |                        |
-     ------------------------
-    Error - cannot access TEST.blg. No such file.
-     -------------------------------
-    |                               |
-    | Missing space in new sentence |
-    |                               |
-     -------------------------------
-      3:	Missing space in a new sentence.Missing space in a new sentence
-     --------------------------------
-    |                                |
-    | Missing spaces around brackets |
-    |                                |
-     --------------------------------
-      7:	)Missing space after bracket
-      5:	Missing space before bracket(
-     ---------------------------------
-    |                                 |
-    | Missing capital in new sentence |
-    |                                 |
-     ---------------------------------
-      9:	Missing capital in new sentence. missing capital in new sentence.
-      11:	Missing capital in new sentence. different spacing.
-      13:	Missing capital in new sentence.
-    over a linebacker
-     ----------------
-    |                |
-    | Repeated words |
-    |                |
-     ----------------
-      16:	Repeated repeated words words on a single line
-      18:	Repeated words
-    words across a line break
-     ------------------
-    |                  |
-    | Footnote spacing |
-    |                  |
-     ------------------
-     21:	This is a misplaced footnote. \footnote{wrong}
-     22:	And so is this.  \footnote{wrong}
-     23:	And this\footnote{wrong}.
-     ---------------
-    |               |
-    | \cite spacing |
-    |               |
-     ---------------
-     26:	This citing\cite{ref} and \cite{ref} is inconsistent.
-     26:	This citing\cite{ref} and \cite{ref} is inconsistent.
-     -------------
-    |             |
-    | a versus an |
-    |             |
-     -------------
-     32:	A error
-     34:	An mistake
+L3:   Missing space in a new sentence.Missing space in a new sentence
+L17:  These are problematic e.g. this or i.e. that or Dr. and Prof. Whoever
+
+Missing spaces before or after brackets
+=======================================
+
+L7:   Here is (a)missing space after bracket
+L5:   Missing space before a(bracket)
+L11:  Extra space before  a (bracket )
+L9:   Extra space after  a ( bracket)
+
+Extra space before footnote command
+===================================
+
+L28:  This is a misplaced footnote. \footnote{wrong}
+L29:  And so is this.  \footnote{wrong}
+L30:  And this\footnote{wrong}.
+
+Inconsistent space around cite command
+======================================
+
+L33:  This citing\cite{ref} and \cite{ref} is inconsistent.
+L43:  Check configuration file \cite{eagbe} \unknown{Abe}
+L33:  This citing\cite{ref} and \cite{ref} is inconsistent.
+
+Missing capital in new sentence
+===============================
+
+L13:  Missing capital in new sentence. missing capital in new sentence.
+L15:  Missing capital in new sentence. different spacing.
+L17:  These are problematic e.g. this or i.e. that or Dr. and Prof. Whoever
+L20:  Missing capital in new sentence.
+over a line break
+
+Repeated words
+==============
+
+L23:  Repeated repeated words words on a single line
+L25:  Repeated words
+words across a line break
+
+a versus an
+===========
+
+L39:  A error
+L41:  An mistake
+
+Extra space around abbreviation
+===============================
+
+L17:  These are problematic e.g. this or i.e. that or Dr. and Prof. Whoever
+L17:  These are problematic e.g. this or i.e. that or Dr. and Prof. Whoever
+L17:  These are problematic e.g. this or i.e. that or Dr. and Prof. Whoever
+L17:  These are problematic e.g. this or i.e. that or Dr. and Prof. Whoever
+```

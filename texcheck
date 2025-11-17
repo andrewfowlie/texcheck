@@ -1,52 +1,127 @@
 #!/bin/bash
 #
 # Check a LaTeX file for spelling errors and common typos
-#
 
-#
-# Boxed output
-#
+HOME=$(dirname "$(readlink -f "$0")")
+DICT=en_GB-ise
+EMPH='\033[1;31m'
+RESET='\033[0m'
 
-function boxes()
+function header()
 {
-  local s="$*"
-  tput setaf 7
-  echo " -${s//?/-}-
-| ${s//?/ } |
-| $(tput setaf 3)$s$(tput setaf 7) |
-| ${s//?/ } |
- -${s//?/-}-"
-  tput sgr 0
+local line="$*"
+  echo -e "\n${EMPH}${line}${RESET}"
+  local length=${#line}
+  echo -e "${EMPH}$(printf '%*s' "$length" '' | tr ' ' '=')${RESET}\n"
 }
-      
-#
-# Home
-#
 
-HOME=$(dirname $(readlink -f $0))
+function prettify
+{
+  sed -E 's/^([0-9]):/L\1:   /g' | sed -E 's/^([0-9]{2}):/L\1:  /g' | sed -E 's/^([0-9]{3}):/L\1: /g' | sed -E 's/^L[0-9]+:/\x1b[1m\x1b[31m&\x1b[0m/g'
+}
+     
+function spell_check()
+{
+    # check spelling with aspell - see http://aspell.net/0.50-doc/man-html/4_Customizing.html
 
-#
-# Colors for grep
-#
+    dictionary_name=$1
+    home_dir=$2
+    tex_file_name=$3
 
-export GREP_COLORS='ms=03;33'
-export PCREGREP_COLOR='03;33'
-                                               
-#
-# Parse command line
-#
+    aspell\
+    --sug-mode normal\
+    --mode=tex\
+    --master="$dictionary_name"\
+    --dont-tex-check-comments\
+    --personal="$home_dir/allowed_words.txt"\
+    --per-conf="$home_dir/commands.txt"\
+    check "$tex_file_name"
+    
+    # show changes
+
+    if [ -f "$tex_file_name".bak ]; then
+      header "Spell check fixes"
+      wdiff -w $'\033[1;31m' -x $' =>\033[0m' -y $'\e[1;32m' -z $'\033[0m' -3 "$tex_file_name".bak "$tex_file_name" | sed -e 's/==//g' | sed -e 's/^ //g' | cat -s
+    fi
+}
+
+function space_new_sentence() 
+{
+  # find missing spaces before new sentence
+  tex_file_name=$1
+  pcregrep -Mn --color=always '\.\w' "$tex_file_name"
+}
+
+function space_bracket()
+{
+  # find problematic spaces around brackets
+  tex_file_name=$1
+  pcregrep -Mn --color=always '\)\w' "$tex_file_name" 
+  pcregrep -Mn --color=always '\w\(' "$tex_file_name"
+  pcregrep -Mn --color=always '\s+\)' "$tex_file_name" 
+  pcregrep -Mn --color=always '\(\s+' "$tex_file_name"
+}
+
+function capital_new_sentence()
+{
+  # find sentences that do not start with capital
+  tex_file_name=$1
+  pcregrep -Mn --color=always '\w\.\s+[a-z]' "$tex_file_name" 
+}
+
+function space_footnote()
+{
+  # check that footnote does not have space before it
+  tex_file_name=$1
+  pcregrep -Mn --color=always '[^\.]\\footnote{' "$tex_file_name"
+}
+
+function space_cite()
+{
+  # check consistent spacing around cite
+  tex_file_name=$1
+  if pcregrep -Mnq '\s+\\cite{' "$tex_file_name" && pcregrep -Mnq '\w\\cite{' "$tex_file_name"; then
+      pcregrep -Mn --color=always '\s+\\cite{' "$tex_file_name"
+      pcregrep -Mn --color=always '\w\\cite{' "$tex_file_name"
+  fi
+}
+
+function space_abbrevation()
+{
+  # check consistent spacing around cite
+  tex_file_name=$1
+  pcregrep -Mni --color=always 'Dr.\s+' "$tex_file_name"
+  pcregrep -Mni --color=always 'Prof.\s+' "$tex_file_name"
+  pcregrep -Mni --color=always 'e.g.\s+' "$tex_file_name"
+  pcregrep -Mni --color=always 'i.e.\s+' "$tex_file_name"
+}
+
+
+function repeated_words()
+{
+  # find repeated words
+  tex_file_name=$1
+  pcregrep -Mn --color=always '\b(\w+)\s+\1\b' "$tex_file_name"
+}
+
+function a_versus_an()
+{
+  # check for a versus an
+  tex_file_name=$1
+  pcregrep -Mni --color=always '\ba\s+[aeiou]' "$tex_file_name"
+  pcregrep -Mni --color=always '\ban\s+[a-z]' "$tex_file_name" | pcregrep -Miv 'an\s+[aeiou]'
+}
+                                                   
+# parse command line
 
 USE="$(basename "$0") [-h] [-n] [-d en_GB-ise] [FILE] -- spell-check a LaTeX file and check for common typos"
-DICT=en_GB-ise
 
-while getopts 'h:d:n' option; do
+while getopts 'h:d' option; do
     case "$option" in
         h) echo "$USE"
            exit 1
            ;;
         d) DICT="$OPTARG"
-           ;;
-        n) NO_SPELL="N"
            ;;
         \?) echo "$USE"
            exit 0
@@ -55,111 +130,44 @@ while getopts 'h:d:n' option; do
 done
 
 shift "$((OPTIND - 1))"
-TEX=$1
+tex_file_name=$1
 
-if [ -z "$TEX" ]; then
+if [ -z "$tex_file_name" ]; then
     echo "$USE"
     exit 0
 fi
 
-if ! [ -e "$TEX" ]; then
-    echo "Error - cannot access $TEX. No such file."
+# check file exists
+
+if [ ! -f "$tex_file_name" ]; then
+    echo "$tex_file_name: cannot open \`$tex_file_name' (No such file or directory)"
     exit 0
 fi
 
-boxes "Checking $TEX"
+# run checks
 
-#
-# Check spelling with aspell - see http://aspell.net/0.50-doc/man-html/4_Customizing.html
-#
+spell_check "$DICT" "$HOME" "$tex_file_name"
 
-if [ -z "$NO_SPELL" ]; then
+header "Missing space before new sentence"
+space_new_sentence "$tex_file_name" | prettify
 
-    boxes "Spelling"
-    echo "$DICT dictionary"
-    echo "Extra allowed words in $HOME/allowed_words.txt"
-    echo "Extra tex commands in $HOME/commands.txt"
+header "Missing spaces before or after brackets"
+space_bracket "$tex_file_name" | prettify
 
-    aspell\
-    --sug-mode normal\
-    --mode=tex\
-    --master="$DICT"\
-    --dont-tex-check-comments\
-    --personal="$HOME/allowed_words.txt"\
-    --per-conf="$HOME/commands.txt"\
-    check "$TEX" # Finally check!
+header "Extra space before footnote command"
+space_footnote "$tex_file_name" | prettify
 
-fi
+header "Inconsistent space around cite command"
+space_cite "$tex_file_name" | prettify
 
-# Show changes
+header "Missing capital in new sentence"
+capital_new_sentence "$tex_file_name" | prettify
 
-wdiff -w $'\033[03;2m' -x $' =>\033[0m' -y $'\033[03;33m' -z $'\033[0m' -3 "$TEX".bak "$TEX" | sed -e 's/==//g' | cat -s
+header "Repeated words"
+repeated_words "$tex_file_name" | prettify
 
-#
-# Check for missing bibliography items
-#
+header "a versus an"
+a_versus_an "$tex_file_name" | prettify
 
-BASE=$(echo "$TEX" | cut -f 1 -d '.')
-BIBLOG=$BASE.blg
-
-boxes "Warnings from $BIBLOG"
-
-if ! [ -e "$BIBLOG" ] || [ -z "$BIBLOG" ]; then
-    echo "Error - cannot access $BIBLOG. No such file."
-else
-    grep --color 'Warning' "$BIBLOG"
-fi
-
-#
-# Missing space in new sentence
-#
-
-boxes "Missing space in new sentence"
-grep -TEni --color=always '\.[a-z]' "$TEX" | grep -Ev '\.pdf'  # Ignore inclusion of e.g. pdf figures
-
-#
-# Missing space before or after bracket
-#
-
-boxes "Missing spaces around brackets"
-grep -TEni --color '\)[a-z]' "$TEX" 
-grep -TEni --color '[a-z]\(' "$TEX"
-
-#
-# Missing capital in new sentence
-#
-
-boxes "Missing capital in new sentence"
-pcregrep -Mn --color=always '\w\.\s+[a-z]' "$TEX" | sed -E 's/(^\w+:)/  \1\t/g'
-
-#
-# Repeated words
-#
-
-boxes "Repeated words"
-pcregrep -Mn --color=always '\b(\w+)\s+\1\b' "$TEX" | sed -E 's/(^\w+:)/  \1\t/g'
-
-#
-# Footnote spacing
-#
-
-boxes "Footnote spacing"
-grep -TEni --color '[^\.]\\footnote{' "$TEX"
-
-#
-# Check \cite spacing
-#
-
-boxes "\\cite spacing"
-if grep -Eiq '\s+\\cite{' "$TEX" && grep -Eiq '[a-z]\\cite{' "$TEX"; then
-    grep -TEni -m 1 --color '\s+\\cite{' "$TEX"
-    grep -TEni -m 1 --color '[a-z]\\cite{' "$TEX"
-fi
-
-#
-# a versus an
-#
-
-boxes "a versus an"
-grep -TEni --color '\ba\s+[aeiou]' "$TEX"
-grep -TEni --color=always '\ban\s+[a-z]' "$TEX" | grep -Ev 'an\s+[aeiou]'
+header "Extra space around abbreviation"
+space_abbrevation "$tex_file_name" | prettify
