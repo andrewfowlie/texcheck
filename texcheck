@@ -17,9 +17,20 @@ local line="$*"
 
 function sanitize_latex()
 {
-  # strip comments & inline math but preserve line numbers
+  # strip comments, inline math and equation and align environments
+  # but preserve line numbers
   tex_file_name=$1
-  sed 's/%.*$/%/g' "$tex_file_name" | sed 's/\$[^$]*\$/$ ... $/g'
+  sed 's/%.*$/%/g' "$tex_file_name" | sed 's/\$[^$]*\$/$ ... $/g' | sed -E '
+  /\\begin\{equation\*?\}/, /\\end\{equation\*?\}/ {
+    /\\begin\{equation\*?\}/b
+    /\\end\{equation\*?\}/b
+    s/.*/.../
+  }' | sed -E '
+  /\\begin\{align\*?\}/, /\\end\{align\*?\}/ {
+    /\\begin\{align\*?\}/b
+    /\\end\{align\*?\}/b
+    s/.*/.../
+  }'
 }
 
 function prettify_pcregrep
