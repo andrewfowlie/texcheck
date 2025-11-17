@@ -33,7 +33,7 @@ function sanitize_latex()
   }'
 }
 
-function prettify_pcregrep
+function prettify_pcregrep()
 {
   # prettify output from pcregrep
   local empty=1
