@@ -8,12 +8,16 @@
 
 # Usage
 
-    ./texcheck your_tex_file.tex
+    ./texcheck your_tex_file.tex  # use default dictionary
     ./texcheck -d en_GB-ize your_tex_file.tex  # use a different dictionary
 
 You might need to install `wdiff` and `pcregrep` by e.g.,
 
-    sudo apt install wdiff pcregrep
+    sudo apt install aspell wdiff pcregrep
+    
+To see your available dictionaries try
+
+    aspell dump dicts
 
 # Advanced usage
 
@@ -29,16 +33,13 @@ added there.
 
 should make a symlink to `texcheck` in `/usr/local/bin`, such that it can be invoked simply by `texcheck` from anywhere.
 
-
 # Example `texcheck test.tex`
 
 ```bash
-Spell check fixes
-=================
-
+Fixed spelling in-place using en_GB-ise dictionary 
+===================================================
 
 \unknown{eagbe} => \unknown{Abe}
-
 
 Missing space before new sentence
 =================================

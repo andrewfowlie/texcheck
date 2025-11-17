@@ -15,9 +15,24 @@ local line="$*"
   echo -e "${EMPH}$(printf '%*s' "$length" '' | tr ' ' '=')${RESET}\n"
 }
 
-function prettify
+function sanitize_latex()
 {
-  sed -E 's/^([0-9]):/L\1:   /g' | sed -E 's/^([0-9]{2}):/L\1:  /g' | sed -E 's/^([0-9]{3}):/L\1: /g' | sed -E 's/^L[0-9]+:/\x1b[1m\x1b[31m&\x1b[0m/g'
+  # strip comments & inline math but preserve line numbers
+  tex_file_name=$1
+  sed 's/%.*$/%/g' "$tex_file_name" | sed 's/\$[^$]*\$/$ ... $/g'
+}
+
+function prettify_pcregrep
+{
+  # prettify output from pcregrep
+  local empty=1
+  while IFS= read -r line; do
+    empty=0
+    echo $line | sed -E 's/^([0-9]):/L\1:   /g' | sed -E 's/^([0-9]{2}):/L\1:  /g' | sed -E 's/^([0-9]{3}):/L\1: /g' | sed -E 's/^L[0-9]+:/\x1b[1m\x1b[31m&\x1b[0m/g'
+  done
+  if [[ $empty -eq 1 ]]; then
+    echo -e "\e[3mNo problems detected\e[0m"
+  fi
 }
      
 function spell_check()
@@ -40,8 +55,9 @@ function spell_check()
     # show changes
 
     if [ -f "$tex_file_name".bak ]; then
-      header "Spell check fixes"
-      wdiff -w $'\033[1;31m' -x $' =>\033[0m' -y $'\e[1;32m' -z $'\033[0m' -3 "$tex_file_name".bak "$tex_file_name" | sed -e 's/==//g' | sed -e 's/^ //g' | cat -s
+      wdiff -w $'\033[1;31m' -x $' =>\033[0m' -y $'\e[1;32m' -z $'\033[0m' -3 "$tex_file_name".bak "$tex_file_name" | sed -e 's/==//g' | sed -e 's/^ //g' | sed '/^$/d'
+    else
+      echo -e "\e[3mNo words replaced\e[0m"
     fi
 }
 
@@ -49,7 +65,7 @@ function space_new_sentence()
 {
   # find missing spaces before new sentence
   tex_file_name=$1
-  pcregrep -Mn --color=always '\.\w' "$tex_file_name"
+  pcregrep -Mni --color=always '[a-z]{2,}\.[a-z]+\s+.*$' "$tex_file_name"
 }
 
 function space_bracket()
@@ -144,30 +160,37 @@ if [ ! -f "$tex_file_name" ]; then
     exit 0
 fi
 
-# run checks
+# run spell check
 
+header "Fixed spelling in-place using ${DICT} dictionary "
 spell_check "$DICT" "$HOME" "$tex_file_name"
 
+# sanitise e.g. strip comments to minimize false positives
+
+sanitize_latex "$tex_file_name" > "$tex_file_name".sanitized
+
+# run checks
+
 header "Missing space before new sentence"
-space_new_sentence "$tex_file_name" | prettify
+space_new_sentence "$tex_file_name".sanitized | prettify_pcregrep
 
 header "Missing spaces before or after brackets"
-space_bracket "$tex_file_name" | prettify
+space_bracket "$tex_file_name".sanitized | prettify_pcregrep
 
 header "Extra space before footnote command"
-space_footnote "$tex_file_name" | prettify
+space_footnote "$tex_file_name".sanitized | prettify_pcregrep
 
 header "Inconsistent space around cite command"
-space_cite "$tex_file_name" | prettify
+space_cite "$tex_file_name".sanitized | prettify_pcregrep
 
 header "Missing capital in new sentence"
-capital_new_sentence "$tex_file_name" | prettify
+capital_new_sentence "$tex_file_name".sanitized | prettify_pcregrep
 
 header "Repeated words"
-repeated_words "$tex_file_name" | prettify
+repeated_words "$tex_file_name".sanitized | prettify_pcregrep
 
 header "a versus an"
-a_versus_an "$tex_file_name" | prettify
+a_versus_an "$tex_file_name".sanitized | prettify_pcregrep
 
 header "Extra space around abbreviation"
-space_abbrevation "$tex_file_name" | prettify
+space_abbrevation "$tex_file_name".sanitized | prettify_pcregrep
