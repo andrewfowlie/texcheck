@@ -1,13 +1,17 @@
-# texcheck
+<h1 align="center">
+✅ texcheck
+</h1>
 
-Spell-check a LaTeX file and check for common typos.
+<div align="center">
+<i>Spell-check a LaTeX file and check for common typos.</i>
+</div>
 
 # Usage
 
     ./texcheck your_tex_file.tex
-    ./texcheck -d en_GB-ize your_tex_file.tex  # Use a different dictionary
+    ./texcheck -d en_GB-ize your_tex_file.tex  # use a different dictionary
 
-You might need to install `wdiff' and `pcregrep` by e.g.,
+You might need to install `wdiff` and `pcregrep` by e.g.,
 
     sudo apt install wdiff pcregrep
 
