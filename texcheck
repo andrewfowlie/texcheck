@@ -90,10 +90,10 @@ function space_abbrevation()
 {
   # check consistent spacing around cite
   tex_file_name=$1
-  pcregrep -Mni --color=always 'Dr.\s+' "$tex_file_name"
-  pcregrep -Mni --color=always 'Prof.\s+' "$tex_file_name"
-  pcregrep -Mni --color=always 'e.g.\s+' "$tex_file_name"
-  pcregrep -Mni --color=always 'i.e.\s+' "$tex_file_name"
+  pcregrep -Mni --color=always 'Dr\.\s+' "$tex_file_name"
+  pcregrep -Mni --color=always 'Prof\.\s+' "$tex_file_name"
+  pcregrep -Mni --color=always 'e\.g\.\s+' "$tex_file_name"
+  pcregrep -Mni --color=always 'i\.e\.\s+' "$tex_file_name"
 }
 
 
