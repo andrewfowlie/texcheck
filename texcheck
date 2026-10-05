@@ -7,16 +7,14 @@ DICT=en_GB-ise
 EMPH='\033[1;31m'
 RESET='\033[0m'
 
-function header()
-{
-local line="$*"
+function header() {
+  local line="$*"
   echo -e "\n${EMPH}${line}${RESET}"
   local length=${#line}
   echo -e "${EMPH}$(printf '%*s' "$length" '' | tr ' ' '=')${RESET}\n"
 }
 
-function sanitize_latex()
-{
+function sanitize_latex() {
   # strip comments, inline math and equation and align environments
   # but preserve line numbers
   tex_file_name=$1
@@ -33,9 +31,8 @@ function sanitize_latex()
   }'
 }
 
-function prettify_pcregrep()
-{
-  # prettify output from pcregrep
+function prettify_pcre2grep() {
+  # prettify output from pcre2grep
   local empty=1
   while IFS= read -r line; do
     empty=0
@@ -45,130 +42,119 @@ function prettify_pcregrep()
     echo -e "\e[3mNo problems detected\e[0m"
   fi
 }
-     
-function spell_check()
-{
-    # check spelling with aspell - see http://aspell.net/0.50-doc/man-html/4_Customizing.html
 
-    dictionary_name=$1
-    home_dir=$2
-    tex_file_name=$3
+function spell_check() {
+  # check spelling with aspell - see http://aspell.net/0.50-doc/man-html/4_Customizing.html
 
-    aspell\
-    --sug-mode normal\
-    --mode=tex\
-    --master="$dictionary_name"\
-    --dont-tex-check-comments\
-    --personal="$home_dir/allowed_words.txt"\
-    --per-conf="$home_dir/commands.txt"\
+  dictionary_name=$1
+  home_dir=$2
+  tex_file_name=$3
+
+  aspell --sug-mode normal --mode=tex --master="$dictionary_name" \
+    --dont-tex-check-comments --personal="$home_dir/allowed_words.txt" \
+    --per-conf="$home_dir/commands.txt" \
     check "$tex_file_name"
-    
-    # show changes
 
-    if [ -f "$tex_file_name".bak ]; then
-      wdiff -w $'\033[1;31m' -x $' =>\033[0m' -y $'\e[1;32m' -z $'\033[0m' -3 "$tex_file_name".bak "$tex_file_name" | sed -e 's/==//g' | sed -e 's/^ //g' | sed '/^$/d'
-    else
-      echo -e "\e[3mNo words replaced\e[0m"
-    fi
-}
+  # show changes
 
-function space_new_sentence() 
-{
-  # find missing spaces before new sentence
-  tex_file_name=$1
-  pcregrep -Mni --color=always '[a-z]{2,}\.[a-z]+\s+.*$' "$tex_file_name"
-}
-
-function space_bracket()
-{
-  # find problematic spaces around brackets
-  tex_file_name=$1
-  pcregrep -Mn --color=always '\)\w' "$tex_file_name" 
-  pcregrep -Mn --color=always '\w\(' "$tex_file_name"
-  pcregrep -Mn --color=always '\s+\)' "$tex_file_name" 
-  pcregrep -Mn --color=always '\(\s+' "$tex_file_name"
-}
-
-function capital_new_sentence()
-{
-  # find sentences that do not start with capital
-  tex_file_name=$1
-  pcregrep -Mn --color=always '\w\.\s+[a-z]' "$tex_file_name" 
-}
-
-function space_footnote()
-{
-  # check that footnote does not have space before it
-  tex_file_name=$1
-  pcregrep -Mn --color=always '[^\.]\\footnote{' "$tex_file_name"
-}
-
-function space_cite()
-{
-  # check consistent spacing around cite
-  tex_file_name=$1
-  if pcregrep -Mnq '\s+\\cite{' "$tex_file_name" && pcregrep -Mnq '\w\\cite{' "$tex_file_name"; then
-      pcregrep -Mn --color=always '\s+\\cite{' "$tex_file_name"
-      pcregrep -Mn --color=always '\w\\cite{' "$tex_file_name"
+  if [ -f "$tex_file_name".bak ]; then
+    wdiff -w $'\033[1;31m' -x $' =>\033[0m' -y $'\e[1;32m' -z $'\033[0m' -3 "$tex_file_name".bak "$tex_file_name" | sed -e 's/==//g' | sed -e 's/^ //g' | sed '/^$/d'
+  else
+    echo -e "\e[3mNo words replaced\e[0m"
   fi
 }
 
-function space_abbrevation()
-{
+function space_new_sentence() {
+  # find missing spaces before new sentence
+  tex_file_name=$1
+  pcre2grep -Mni --color=always '[a-z]{2,}\.[a-z]+\s+.*$' "$tex_file_name"
+}
+
+function space_bracket() {
+  # find problematic spaces around brackets
+  tex_file_name=$1
+  pcre2grep -Mn --color=always '\)\w' "$tex_file_name"
+  pcre2grep -Mn --color=always '\w\(' "$tex_file_name"
+  pcre2grep -Mn --color=always '\s+\)' "$tex_file_name"
+  pcre2grep -Mn --color=always '\(\s+' "$tex_file_name"
+}
+
+function capital_new_sentence() {
+  # find sentences that do not start with capital
+  tex_file_name=$1
+  pcre2grep -Mn --color=always '\w\.\s+[a-z]' "$tex_file_name"
+}
+
+function space_footnote() {
+  # check that footnote does not have space before it
+  tex_file_name=$1
+  pcre2grep -Mn --color=always '[^\.]\\footnote{' "$tex_file_name"
+}
+
+function space_cite() {
   # check consistent spacing around cite
   tex_file_name=$1
-  pcregrep -Mni --color=always 'Dr\.\s+' "$tex_file_name"
-  pcregrep -Mni --color=always 'Prof\.\s+' "$tex_file_name"
-  pcregrep -Mni --color=always 'e\.g\.\s+' "$tex_file_name"
-  pcregrep -Mni --color=always 'i\.e\.\s+' "$tex_file_name"
+  if pcre2grep -Mnq '\s+\\cite{' "$tex_file_name" && pcre2grep -Mnq '\w\\cite{' "$tex_file_name"; then
+    pcre2grep -Mn --color=always '\s+\\cite{' "$tex_file_name"
+    pcre2grep -Mn --color=always '\w\\cite{' "$tex_file_name"
+  fi
 }
 
+function space_abbrevation() {
+  # check consistent spacing around cite
+  tex_file_name=$1
+  pcre2grep -Mni --color=always 'Dr\.\s+' "$tex_file_name"
+  pcre2grep -Mni --color=always 'Prof\.\s+' "$tex_file_name"
+  pcre2grep -Mni --color=always 'e\.g\.\s+' "$tex_file_name"
+  pcre2grep -Mni --color=always 'i\.e\.\s+' "$tex_file_name"
+}
 
-function repeated_words()
-{
+function repeated_words() {
   # find repeated words
   tex_file_name=$1
-  pcregrep -Mn --color=always '\b(\w+)\s+\1\b' "$tex_file_name"
+  pcre2grep -Mn --color=always '\b(\w+)\s+\1\b' "$tex_file_name"
 }
 
-function a_versus_an()
-{
+function a_versus_an() {
   # check for a versus an
   tex_file_name=$1
-  pcregrep -Mni --color=always '(\s)a\s+[aeiou]' "$tex_file_name"
-  pcregrep -Mni --color=always '(\s)an\s+[a-z]' "$tex_file_name" | pcregrep -Miv '(\s)an\s+[aeiou]'
+  pcre2grep -Mni --color=always '(\s)a\s+[aeiou]' "$tex_file_name"
+  pcre2grep -Mni --color=always '(\s)an\s+[a-z]' "$tex_file_name" | pcre2grep -Miv '(\s)an\s+[aeiou]'
 }
-                                                   
+
 # parse command line
 
 USE="$(basename "$0") [-h] [-n] [-d en_GB-ise] [FILE] -- spell-check a LaTeX file and check for common typos"
 
 while getopts 'hd:' option; do
-    case "$option" in
-        h) echo "$USE"
-           exit 1
-           ;;
-        d) DICT="$OPTARG"
-           ;;
-        \?) echo "$USE"
-           exit 0
-           ;;
-    esac
+  case "$option" in
+  h)
+    echo "$USE"
+    exit 1
+    ;;
+  d)
+    DICT="$OPTARG"
+    ;;
+  \?)
+    echo "$USE"
+    exit 0
+    ;;
+  esac
 done
 
 shift "$((OPTIND - 1))"
 tex_file_name=$@
 
 if [ -z "$tex_file_name" ]; then
-    echo "$USE"
-    exit 0
+  echo "$USE"
+  exit 0
 fi
 
 # check file exists
 
 if [ ! -f "$tex_file_name" ]; then
-    echo "$tex_file_name: cannot open \`$tex_file_name' (No such file or directory)"
-    exit 0
+  echo "$tex_file_name: cannot open \`$tex_file_name' (No such file or directory)"
+  exit 0
 fi
 
 # run spell check
@@ -178,30 +164,30 @@ spell_check "$DICT" "$HOME" "$tex_file_name"
 
 # sanitise e.g. strip comments to minimize false positives
 
-sanitize_latex "$tex_file_name" > "$tex_file_name".sanitized
+sanitize_latex "$tex_file_name" >"$tex_file_name".sanitized
 
 # run checks
 
 header "Missing space before new sentence"
-space_new_sentence "$tex_file_name".sanitized | prettify_pcregrep
+space_new_sentence "$tex_file_name".sanitized | prettify_pcre2grep
 
 header "Missing spaces before or after brackets"
-space_bracket "$tex_file_name".sanitized | prettify_pcregrep
+space_bracket "$tex_file_name".sanitized | prettify_pcre2grep
 
 header "Extra space before footnote command"
-space_footnote "$tex_file_name".sanitized | prettify_pcregrep
+space_footnote "$tex_file_name".sanitized | prettify_pcre2grep
 
 header "Inconsistent space around cite command"
-space_cite "$tex_file_name".sanitized | prettify_pcregrep
+space_cite "$tex_file_name".sanitized | prettify_pcre2grep
 
 header "Missing capital in new sentence"
-capital_new_sentence "$tex_file_name".sanitized | prettify_pcregrep
+capital_new_sentence "$tex_file_name".sanitized | prettify_pcre2grep
 
 header "Repeated words"
-repeated_words "$tex_file_name".sanitized | prettify_pcregrep
+repeated_words "$tex_file_name".sanitized | prettify_pcre2grep
 
 header "a versus an"
-a_versus_an "$tex_file_name".sanitized | prettify_pcregrep
+a_versus_an "$tex_file_name".sanitized | prettify_pcre2grep
 
 header "Extra space around abbreviation"
-space_abbrevation "$tex_file_name".sanitized | prettify_pcregrep
+space_abbrevation "$tex_file_name".sanitized | prettify_pcre2grep
